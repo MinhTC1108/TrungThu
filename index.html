@@ -8,13 +8,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="./css.css">
+
+  <script>
+    // script.js cũ dùng ./assets/..., trong repo hiện tại tài nguyên nằm ở thư mục gốc.
+    window.addEventListener('error', function (event) {
+      const image = event.target;
+      if (!image || image.tagName !== 'IMG' || !image.src.includes('/assets/')) return;
+
+      const fixedUrl = image.src.replace('/assets/', '/');
+      if (image.src !== fixedUrl) {
+        image.dataset.pathFixed = 'true';
+        image.src = fixedUrl;
+      }
+    }, true);
+  </script>
 </head>
 <body>
   <div id="webgl-container"></div>
 
   <div class="top-bar">
     <button class="icon-btn" id="audio-btn" title="Bật/Tắt Nhạc"><i class="fas fa-music"></i></button>
-    <button class="icon-btn" id="reset-cam-btn" title="Góc nh��n ban đầu"><i class="fas fa-compress-arrows-alt"></i></button>
+    <button class="icon-btn" id="reset-cam-btn" title="Góc nhìn ban đầu"><i class="fas fa-compress-arrows-alt"></i></button>
   </div>
 
   <div class="click-hint">Chạm vào lồng đèn nhé</div>
@@ -37,13 +51,23 @@
   <script src="./OrbitControls.js"></script>
   <script src="./script.js"></script>
 
-  <!-- Tương thích với các phiên bản script cũ còn dùng đường dẫn ./assets/. -->
   <script>
-    const wishImage = document.getElementById('wishImage');
-    wishImage.addEventListener('error', () => {
-      const fixedSource = wishImage.src.replace('/assets/', '/');
-      if (wishImage.src !== fixedSource) wishImage.src = fixedSource;
-    });
+    // Trình duyệt chặn autoplay nếu chưa có thao tác của người dùng.
+    // Phát ngay khi người dùng chạm/click lần đầu, không cần bấm đúng nút nhạc.
+    (() => {
+      const audio = document.getElementById('bgm');
+      if (!audio) return;
+
+      const playAudio = () => {
+        audio.play().catch(() => {
+          // Chính sách trình duyệt có thể vẫn chặn; nút nhạc trong script.js sẽ xử lý tiếp.
+        });
+      };
+
+      ['pointerdown', 'touchstart', 'keydown'].forEach((eventName) => {
+        window.addEventListener(eventName, playAudio, { once: true, passive: true });
+      });
+    })();
   </script>
 </body>
 </html>
