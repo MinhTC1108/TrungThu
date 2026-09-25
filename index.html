@@ -10,17 +10,22 @@
   <link rel="stylesheet" href="./css.css">
 
   <script>
-    // script.js cũ dùng ./assets/..., trong repo hiện tại tài nguyên nằm ở thư mục gốc.
-    window.addEventListener('error', function (event) {
-      const image = event.target;
-      if (!image || image.tagName !== 'IMG' || !image.src.includes('/assets/')) return;
+    // Các ảnh trong repository nằm ở thư mục gốc, còn script cũ có thể
+    // vẫn tạo URL ./assets/.... Chuyển URL trước khi trình duyệt tải ảnh.
+    (() => {
+      const nativeSrcDescriptor = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+      if (!nativeSrcDescriptor || !nativeSrcDescriptor.set) return;
 
-      const fixedUrl = image.src.replace('/assets/', '/');
-      if (image.src !== fixedUrl) {
-        image.dataset.pathFixed = 'true';
-        image.src = fixedUrl;
-      }
-    }, true);
+      Object.defineProperty(HTMLImageElement.prototype, 'src', {
+        configurable: nativeSrcDescriptor.configurable,
+        enumerable: nativeSrcDescriptor.enumerable,
+        get: nativeSrcDescriptor.get,
+        set(value) {
+          const source = String(value).replace(/\/assets\//g, '/');
+          nativeSrcDescriptor.set.call(this, source);
+        }
+      });
+    })();
   </script>
 </head>
 <body>
@@ -47,26 +52,38 @@
 
   <audio id="bgm" loop preload="auto" src="./1.mp3"></audio>
 
+  <!-- Tải tuần tự để script.js luôn có THREE và OrbitControls. -->
   <script src="./three.min.js"></script>
   <script src="./OrbitControls.js"></script>
   <script src="./script.js"></script>
 
   <script>
-    // Trình duyệt chặn autoplay nếu chưa có thao tác của người dùng.
-    // Phát ngay khi người dùng chạm/click lần đầu, không cần bấm đúng nút nhạc.
+    // Autoplay bị trình duyệt chặn khi chưa có thao tác. Phát ngay sau
+    // lần chạm/click đầu tiên; nút nhạc vẫn dùng được như bình thường.
     (() => {
       const audio = document.getElementById('bgm');
+      const audioButton = document.getElementById('audio-btn');
       if (!audio) return;
 
-      const playAudio = () => {
-        audio.play().catch(() => {
-          // Chính sách trình duyệt có thể vẫn chặn; nút nhạc trong script.js sẽ xử lý tiếp.
-        });
+      const playAfterInteraction = () => {
+        audio.play().catch(() => {});
       };
 
       ['pointerdown', 'touchstart', 'keydown'].forEach((eventName) => {
-        window.addEventListener(eventName, playAudio, { once: true, passive: true });
+        window.addEventListener(eventName, playAfterInteraction, {
+          once: true,
+          passive: true
+        });
       });
+
+      audio.addEventListener('error', () => {
+        if (audio.src.includes('/assets/')) {
+          audio.src = audio.src.replace('/assets/', '/');
+        }
+      });
+
+      // Đảm bảo nút nhạc luôn kích hoạt phát nhạc sau thao tác người dùng.
+      audioButton?.addEventListener('click', playAfterInteraction);
     })();
   </script>
 </body>
