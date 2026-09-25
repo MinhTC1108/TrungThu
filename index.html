@@ -33,9 +33,17 @@
 
   <audio id="bgm" loop preload="auto" src="./1.mp3"></audio>
 
-  <!-- Tải tuần tự: script.js chỉ chạy sau khi Three.js và OrbitControls đã sẵn sàng. -->
   <script src="./three.min.js"></script>
   <script src="./OrbitControls.js"></script>
   <script src="./script.js"></script>
+
+  <!-- Tương thích với các phiên bản script cũ còn dùng đường dẫn ./assets/. -->
+  <script>
+    const wishImage = document.getElementById('wishImage');
+    wishImage.addEventListener('error', () => {
+      const fixedSource = wishImage.src.replace('/assets/', '/');
+      if (wishImage.src !== fixedSource) wishImage.src = fixedSource;
+    });
+  </script>
 </body>
 </html>
