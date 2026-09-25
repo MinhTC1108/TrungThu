@@ -8,7 +8,39 @@
     <!-- Google Fonts & FontAwesome -->
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="./assets/css.css">
+    <script>
+      window.__APP_BASE__ = (() => {
+        const candidates = [
+          window.location.pathname.replace(/index\.html$/, '').replace(/\/+$/, '') + '/',
+          './',
+          './thu3d/',
+          '/Trung-thu/',
+          '/Trung-thu/thu3d/'
+        ];
+
+        function assetExists(url) {
+          try {
+            const xhr = new XMLHttpRequest();
+            xhr.open('HEAD', url, false);
+            xhr.send();
+            return xhr.status >= 200 && xhr.status < 400;
+          } catch (error) {
+            return false;
+          }
+        }
+
+        for (const candidate of candidates) {
+          const base = candidate.startsWith('http') ? candidate : candidate;
+          const resolved = new URL('assets/css.css', base.startsWith('http') ? base : window.location.origin + base).toString();
+          if (assetExists(resolved)) {
+            return candidate.startsWith('http') ? candidate : candidate;
+          }
+        }
+
+        return './';
+      })();
+    </script>
+    <link rel="stylesheet" id="theme-css">
 </head>
 <body>
 
@@ -35,12 +67,26 @@
         </div>
     </div>
 
-    <audio id="bgm" loop src="./assets/1.mp3"></audio>
+    <audio id="bgm" loop src=""></audio>
     
     
     <!-- Three.js & OrbitControls -->
-    <script src="./assets/three.min.js"></script>
-    <script src="./assets/OrbitControls.js"></script>
-    <script src="./assets/script.js"></script>
+    <script>
+      const appBase = (() => {
+        const base = window.__APP_BASE__ || './';
+        return base.endsWith('/') ? base : base + '/';
+      })();
+      document.getElementById('theme-css').setAttribute('href', new URL('assets/css.css', appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString());
+      const bgm = document.getElementById('bgm');
+      bgm.src = new URL('assets/1.mp3', appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString();
+      const scriptLoader = (src) => {
+        const script = document.createElement('script');
+        script.src = new URL(src, appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString();
+        document.body.appendChild(script);
+      };
+      scriptLoader('assets/three.min.js');
+      scriptLoader('assets/OrbitControls.js');
+      scriptLoader('assets/script.js');
+    </script>
 </body>
 </html>
