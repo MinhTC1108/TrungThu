@@ -13,9 +13,9 @@
         const candidates = [
           window.location.pathname.replace(/index\.html$/, '').replace(/\/+$/, '') + '/',
           './',
-          './thu3d/',
-          '/Trung-thu/',
-          '/Trung-thu/thu3d/'
+          '/TrungThu/',
+          '/TrungThu/',
+          'https://minhtc1108.github.io/TrungThu/'
         ];
 
         function assetExists(url) {
@@ -30,10 +30,9 @@
         }
 
         for (const candidate of candidates) {
-          const base = candidate.startsWith('http') ? candidate : candidate;
-          const resolved = new URL('assets/css.css', base.startsWith('http') ? base : window.location.origin + base).toString();
+          const resolved = new URL('css.css', candidate.endsWith('/') ? candidate : candidate + '/').toString();
           if (assetExists(resolved)) {
-            return candidate.startsWith('http') ? candidate : candidate;
+            return candidate.endsWith('/') ? candidate : candidate + '/';
           }
         }
 
@@ -68,25 +67,28 @@
     </div>
 
     <audio id="bgm" loop src=""></audio>
-    
-    
-    <!-- Three.js & OrbitControls -->
+
     <script>
       const appBase = (() => {
         const base = window.__APP_BASE__ || './';
         return base.endsWith('/') ? base : base + '/';
       })();
-      document.getElementById('theme-css').setAttribute('href', new URL('assets/css.css', appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString());
+
+      const toAbsoluteUrl = (path) => new URL(path, appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString();
+
+      document.getElementById('theme-css').setAttribute('href', toAbsoluteUrl('css.css'));
       const bgm = document.getElementById('bgm');
-      bgm.src = new URL('assets/1.mp3', appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString();
+      bgm.src = toAbsoluteUrl('1.mp3');
+
       const scriptLoader = (src) => {
         const script = document.createElement('script');
-        script.src = new URL(src, appBase.startsWith('http') ? appBase : window.location.origin + appBase).toString();
+        script.src = toAbsoluteUrl(src);
         document.body.appendChild(script);
       };
-      scriptLoader('assets/three.min.js');
-      scriptLoader('assets/OrbitControls.js');
-      scriptLoader('assets/script.js');
+
+      scriptLoader('three.min.js');
+      scriptLoader('OrbitControls.js');
+      scriptLoader('script.js');
     </script>
 </body>
 </html>
